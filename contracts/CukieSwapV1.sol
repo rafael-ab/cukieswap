@@ -72,7 +72,7 @@ contract CukieSwapV1 is Context {
         uint256 len = _toTokens.length;
         for (uint i = 0; i < len; i++) {
             address _toToken = _toTokens[i];
-            uint256 newAmount = amountIn.mul(amountProportions[i]).div(AMOUNT_PROPORTION);git rem
+            uint256 newAmount = amountIn.mul(amountProportions[i]).div(AMOUNT_PROPORTION);
             path[1] = _toToken;
             router.swapExactETHForTokens{value: newAmount}(
                 1,
