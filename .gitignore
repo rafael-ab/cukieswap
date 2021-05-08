@@ -11,3 +11,5 @@ cache
 # OpenZeppelin
 .openzeppelin/dev-*.json
 .openzeppelin/.session
+.openzeppelin/unknown-*.json
+.openzeppelin\.session

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "./uniswapv2/interfaces/IUniswapV2Router.sol";
 import "./uniswapv2/interfaces/IERC20.sol";
 
@@ -10,21 +11,25 @@ import "hardhat/console.sol";
 
 /// @title A Cukie Token Swapper
 /// @author Rafael Romero
-contract CukieSwapV1 is Context {
-    using SafeMath for uint256;
+contract CukieSwapV1 is Initializable, ContextUpgradeable {
+    using SafeMathUpgradeable for uint256;
 
-    IUniswapV2Router public immutable router = IUniswapV2Router(
+    IUniswapV2Router public constant router = IUniswapV2Router(
         0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
     );
-    address private immutable weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address payable private recipient;
+    address private constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     uint32 private constant AMOUNT_PROPORTION = 10000;
+    address public recipient;
 
     event LogSwap(
         address indexed from,
         address indexed to,
         uint256 amount
     );
+
+    function initialize(address _recipient) external initializer {
+        recipient = payable(_recipient);
+    }
 
     function swapEthToTokens(
         address[] memory toTokens,
@@ -48,7 +53,7 @@ contract CukieSwapV1 is Context {
 
         // 0.1% of fees
         uint256 fees = amountIn.mul(1).div(1000);
-        (bool success, ) = recipient.call{value: fees}("");
+        (bool success, ) = payable(recipient).call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
         _ethToTokens(
             toTokens, 
@@ -82,9 +87,5 @@ contract CukieSwapV1 is Context {
             );
             emit LogSwap(weth, _toToken, newAmount);
         }
-    }
-
-    function initialize(address _recipient) external {
-        recipient = payable(_recipient);
     }
 }

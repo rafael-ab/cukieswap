@@ -3,6 +3,7 @@
  */
  require("dotenv").config();
  require("@nomiclabs/hardhat-truffle5");
+ require('@openzeppelin/hardhat-upgrades');
  require("hardhat-gas-reporter");
 
 module.exports = {
