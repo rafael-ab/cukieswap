@@ -13,10 +13,10 @@ import "hardhat/console.sol";
 contract CukieSwapV1 is Initializable, ContextUpgradeable {
     using SafeMathUpgradeable for uint256;
 
-    address private _router;
+    address public _router;
     IUniswapV2Router public router;
-    address private _weth;
-    uint32 private MAX_PROPORTION;
+    address public _weth;
+    uint32 public MAX_PROPORTION;
     address payable public recipient;
 
     event LogSwap(
