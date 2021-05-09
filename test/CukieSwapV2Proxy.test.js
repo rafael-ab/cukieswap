@@ -6,7 +6,7 @@ const ACCOUNT = "0x73BCEb1Cd57C711feaC4224D062b0F6ff338501e";
 contract("CukieSwapV2 (Proxy)", () => {
   let feeholder, instance, upgraded;
 
-  beforeEach(async () => {
+  /* before(async () => {
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [ACCOUNT],
@@ -21,7 +21,7 @@ contract("CukieSwapV2 (Proxy)", () => {
 
   });
 
-  it("should retrieves a previously stored recipient", async () => {
-    assert.equal(feeholder.address, await upgraded.recipient());
-  }).timeout(50000);
+  it("recipient address should be equal in contract v1 and v2", async () => {
+    assert.equal(instance.recipient(), await upgraded.recipient());
+  }).timeout(50000); */
 });
