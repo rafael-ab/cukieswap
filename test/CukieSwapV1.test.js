@@ -4,8 +4,6 @@ const IERC20 = artifacts.require("IERC20");
 const { assert, web3 } = require("hardhat");
 const { expectEvent, time } = require("@openzeppelin/test-helpers");
 
-const TIMEOUT = 100000;
-
 const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 const SNX_ADDRESS = "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F";
@@ -47,7 +45,7 @@ contract("CukieSwapV1", () => {
     let balance = await feeholder.getBalance({from: ACCOUNT});
     balance = toWei(balance, "ether");
     assert(balance > 0);
-  }).timeout(TIMEOUT);
+  });
 
    it("should swap ETH to DAI", async () => {
     const result = await cukieSwapV1.swapEthToTokenUNI(
@@ -65,7 +63,7 @@ contract("CukieSwapV1", () => {
     const daiToken = await IERC20.at(DAI_ADDRESS);
     const balance = await daiToken.balanceOf(ACCOUNT);
     console.log("DAI Balance:", fromWei(balance));
-  }).timeout(TIMEOUT);
+  });
 
    it("should swap ETH to LINK", async () => {
     const result = await cukieSwapV1.swapEthToTokenUNI(
@@ -83,7 +81,7 @@ contract("CukieSwapV1", () => {
     const linkToken = await IERC20.at(LINK_ADDRESS);
     const balance = await linkToken.balanceOf(ACCOUNT);
     console.log("LINK Balance:", fromWei(balance));
-  }).timeout(TIMEOUT);
+  });
 
   it("should swap ETH to 50.00% DAI and 50.00% SNX", async () => {
     const result = await cukieSwapV1.swapEthToTokensUNI(
@@ -110,7 +108,7 @@ contract("CukieSwapV1", () => {
     const snxToken = await IERC20.at(SNX_ADDRESS);
     const snxBalance = await snxToken.balanceOf(ACCOUNT);
     console.log("SNX Balance:", Number(web3.utils.fromWei(snxBalance)));
-  }).timeout(TIMEOUT); 
+  }); 
 
   it("should swap ETH to 75.35% DAI and 24.65% LINK", async () => {
     const result = await cukieSwapV1.swapEthToTokensUNI(
@@ -139,5 +137,5 @@ contract("CukieSwapV1", () => {
     const linkToken = await IERC20.at(LINK_ADDRESS);
     const linkBalance = await linkToken.balanceOf(ACCOUNT);
     console.log("LINK Balance:", Number(web3.utils.fromWei(linkBalance)));
-  }).timeout(TIMEOUT);
+  });
 })

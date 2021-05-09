@@ -1,7 +1,6 @@
 const FeeHolder = artifacts.require("FeeHolder");
 const { assert, upgrades, ethers } = require("hardhat");
 
-const TIMEOUT = 100000;
 const ACCOUNT = "0x73BCEb1Cd57C711feaC4224D062b0F6ff338501e";
 
 contract("CukieSwapV1 (Proxy)", () => {
@@ -20,5 +19,5 @@ contract("CukieSwapV1 (Proxy)", () => {
 
   it("should retrieves a previously initialised recipient", async () => {
     assert.equal(feeholder.address, await instance.recipient());
-  }).timeout(TIMEOUT);
+  });
 });
