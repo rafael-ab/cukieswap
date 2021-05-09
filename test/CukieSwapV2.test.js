@@ -32,9 +32,8 @@ contract("CukieSwapV2", () => {
   });
 
   it("should holds fees", async () => {
-    const result = await cukieSwapV2.swapEthToTokensBAL(
-      [DAI_ADDRESS],
-      [10000],
+    const result = await cukieSwapV2.swapEthToTokenBAL(
+      DAI_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);
@@ -45,14 +44,14 @@ contract("CukieSwapV2", () => {
       amount: toWei(0.999, "ether")
     });
 
-    let balance = toWei(await feeholder.getBalance({from: ACCOUNT}), "ether");
+    let balance = await feeholder.getBalance({from: ACCOUNT});
+    balance = toWei(balance, "ether");
     assert(balance > 0);
   }).timeout(TIMEOUT);
 
    it("should swap ETH to DAI", async () => {
-    const result = await cukieSwapV2.swapEthToTokensBAL(
-      [DAI_ADDRESS],
-      [10000],
+    const result = await cukieSwapV2.swapEthToTokenBAL(
+      DAI_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);
@@ -69,9 +68,8 @@ contract("CukieSwapV2", () => {
   }).timeout(TIMEOUT);
 
    it("should swap ETH to BAL", async () => {
-    const result = await cukieSwapV2.swapEthToTokensBAL(
-      [BAL_ADDRESS],
-      [10000],
+    const result = await cukieSwapV2.swapEthToTokenBAL(
+      BAL_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);

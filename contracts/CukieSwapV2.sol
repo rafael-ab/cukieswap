@@ -16,6 +16,7 @@ import "hardhat/console.sol";
 contract CukieSwapV2 is CukieSwapV1 {
     using SafeMathUpgradeable for uint256;
 
+    IWETH weth;
     address private _bpool = 0x44Ed13fca4ce66cAa29d03dDE9a74a24802CD6be;
     IBPool bpool;
 
@@ -27,7 +28,27 @@ contract CukieSwapV2 is CukieSwapV1 {
         _weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
         MAX_PROPORTION = 10000;
         recipient = _recipient;
+        weth = IWETH(_weth);
         bpool = IBPool(_bpool);
+    }
+
+    function swapEthToTokenBAL(
+        address toToken
+    ) external payable {
+        require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
+
+        uint256 amountIn = msg.value;
+        require(amountIn > 0, "CukieSwap: ZERO_AMOUNT");
+
+        uint256 fees = amountIn.div(1000);
+        (bool success, ) = recipient.call{value: fees}("");
+        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
+
+        _swapEthToTokenBAL(
+            toToken, 
+            amountIn.sub(fees), 
+            MAX_PROPORTION
+        );
     }
 
     function swapEthToTokensBAL(
@@ -60,6 +81,31 @@ contract CukieSwapV2 is CukieSwapV1 {
         );
     }
 
+    function _swapEthToTokenBAL(
+        address toToken,
+        uint256 amount,
+        uint256 proportion
+    ) internal {
+        require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
+        require(proportion > 0 && proportion <= MAX_PROPORTION, "CukieSwap: PROPORTION_ERROR");
+
+        uint256 newAmount = amount.mul(proportion).div(MAX_PROPORTION);
+        if(weth.balanceOf(address(this)) == 0) {
+            weth.deposit{value: amount}();
+        }
+        weth.approve(_bpool, newAmount);
+        (uint256 tokenAmountOut, ) = bpool.swapExactAmountIn(
+            _weth,
+            newAmount,
+            toToken,
+            1,
+            99999999 * 10 ** 18
+        );
+        IERC20(toToken).transfer(_msgSender(), tokenAmountOut);
+
+        emit LogSwap(_weth, toToken, newAmount);
+    }
+
     function _swapEthToTokensBAL(
         address[] memory toTokens,
         uint256 amount,
@@ -69,25 +115,13 @@ contract CukieSwapV2 is CukieSwapV1 {
             toTokens.length > 0 && amountProportions.length == toTokens.length,
             "CukieSwap: ZERO_LENGTH_TOKENS"
         );
-        IWETH weth = IWETH(_weth);
-        weth.deposit{value: amount}();
 
+        weth.deposit{value: amount}();
 
         uint256 len = toTokens.length;
         for (uint i = 0; i < len; i++) {
             address toToken = toTokens[i];
-            uint256 newAmount = amount.mul(amountProportions[i]).div(MAX_PROPORTION);
-            weth.approve(_bpool, newAmount);
-            (uint256 tokenAmountOut, ) = bpool.swapExactAmountIn(
-                _weth,
-                newAmount,
-                toToken,
-                1,
-                99999999 * 10 ** 18
-            );
-            IERC20(toToken).transfer(_msgSender(), tokenAmountOut);
-
-            emit LogSwap(_weth, toToken, newAmount);
+            _swapEthToTokenBAL(toToken, amount, amountProportions[i]);
         }
     }
 }
