@@ -18,7 +18,7 @@ const fromWei = (value, type) => Number(web3.utils.fromWei(String(value), type))
 contract("CukieSwapV1", () => {
   let cukieSwapV1, feeholder;
 
-  beforeEach(async () => {
+  before(async () => {
       await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [ACCOUNT],
@@ -31,9 +31,8 @@ contract("CukieSwapV1", () => {
   });
 
   it("should holds fees", async () => {
-    const result = await cukieSwapV1.swapEthToTokens(
-      [DAI_ADDRESS],
-      [10000],
+    const result = await cukieSwapV1.swapEthToTokenUNI(
+      DAI_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);
@@ -44,14 +43,14 @@ contract("CukieSwapV1", () => {
       amount: toWei(0.999, "ether")
     });
 
-    let balance = toWei(await feeholder.getBalance({from: ACCOUNT}), "ether");
+    let balance = await feeholder.getBalance({from: ACCOUNT});
+    balance = toWei(balance, "ether");
     assert(balance > 0);
   }).timeout(50000);
-/* 
+
    it("should swap ETH to DAI", async () => {
-    const result = await cukieSwapV1.swapEthToTokens(
-      [DAI_ADDRESS],
-      [10000],
+    const result = await cukieSwapV1.swapEthToTokenUNI(
+      DAI_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);
@@ -68,9 +67,8 @@ contract("CukieSwapV1", () => {
   }).timeout(50000);
 
    it("should swap ETH to LINK", async () => {
-    const result = await cukieSwapV1.swapEthToTokens(
-      [LINK_ADDRESS],
-      [10000],
+    const result = await cukieSwapV1.swapEthToTokenUNI(
+      LINK_ADDRESS,
       {from: ACCOUNT, value: toWei(1, "ether")}
     );
     console.log("Gas Used:", result.receipt.gasUsed);
@@ -86,8 +84,8 @@ contract("CukieSwapV1", () => {
     console.log("LINK Balance:", fromWei(balance));
   }).timeout(50000);
 
-  it("should swap ETH to 50% DAI and 50% SNX", async () => {
-    const result = await cukieSwapV1.swapEthToTokens(
+  it("should swap ETH to 50.00% DAI and 50.00% SNX", async () => {
+    const result = await cukieSwapV1.swapEthToTokensUNI(
       [DAI_ADDRESS, SNX_ADDRESS],
       [5000, 5000],
       {from: ACCOUNT, value: toWei(1, "ether")}
@@ -114,7 +112,7 @@ contract("CukieSwapV1", () => {
   }).timeout(50000); 
 
   it("should swap ETH to 75.35% DAI and 24.65% LINK", async () => {
-    const result = await cukieSwapV1.swapEthToTokens(
+    const result = await cukieSwapV1.swapEthToTokensUNI(
       [DAI_ADDRESS, LINK_ADDRESS],
       [7535, 2465],
       {from: ACCOUNT, value: toWei(1, "ether")}
@@ -140,5 +138,5 @@ contract("CukieSwapV1", () => {
     const linkToken = await IERC20.at(LINK_ADDRESS);
     const linkBalance = await linkToken.balanceOf(ACCOUNT);
     console.log("LINK Balance:", Number(web3.utils.fromWei(linkBalance)));
-  }).timeout(50000); */
+  }).timeout(50000);
 })

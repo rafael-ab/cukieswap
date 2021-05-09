@@ -33,7 +33,7 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         recipient = _recipient;
     }
 
-    function swapEthToToken(
+    function swapEthToTokenUNI(
         address toToken
     ) external payable {
         require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
