@@ -37,6 +37,7 @@ npm run compile
 ```
 
 _Finally, you need to put your Alchemy API Key in a .env file_
+_in order to use the mainnet_
 
 ```
 ALCHEMY_MAIN_API_KEY=<YOUR_API_KEY>
@@ -44,7 +45,7 @@ ALCHEMY_MAIN_API_KEY=<YOUR_API_KEY>
 
 ## Running tests ⚙️
 
-_Run the tests to verify the swapping logic_
+_Run the tests to verify the swapping logic and upgradeability_
 
 ```
 npm run test
@@ -55,7 +56,9 @@ npm run test
 ## Built with 🛠️
 
 - [Solidity](https://docs.soliditylang.org/en/v0.7.6/)
+- [Hardhat](https://hardhat.org/)
 - [UniswapV2](https://uniswap.org/docs/v2/)
+- [Balancer](https://docs.balancer.finance/)
 
 ## Author ✒️
 
