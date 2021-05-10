@@ -51,6 +51,8 @@ _Run the tests to verify the swapping logic and upgradeability_
 npm run test
 ```
 
+**Make sure you set ALCHEMY_MAIN_API_KEY in your .env file**
+
 ## Deployment 📦
 
 ## Built with 🛠️
