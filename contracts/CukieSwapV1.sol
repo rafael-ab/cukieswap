@@ -19,11 +19,7 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
     uint32 public MAX_PROPORTION;
     address payable public recipient;
 
-    event LogSwap(
-        address indexed from,
-        address indexed to,
-        uint256 amount
-    );
+    event LogSwap(address indexed from, address indexed to, uint256 amount);
 
     function initialize(address payable _recipient) external initializer {
         _router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
@@ -33,9 +29,7 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         recipient = _recipient;
     }
 
-    function swapEthToTokenUNI(
-        address toToken
-    ) external payable {
+    function swapEthToTokenUNI(address toToken) external payable {
         require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
 
         uint256 amountIn = msg.value;
@@ -46,13 +40,12 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
 
         _swapEthToTokenUNI(
-            toToken, 
-            amountIn.sub(fees), 
-            MAX_PROPORTION, 
+            toToken,
+            amountIn.sub(fees),
+            MAX_PROPORTION,
             block.timestamp + 360
         );
     }
-
 
     function swapEthToTokensUNI(
         address[] memory toTokens,
@@ -65,7 +58,7 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
 
         uint256 sum = 0;
         uint256 len = amountProportions.length;
-        for (uint i; i < len; i++) {
+        for (uint256 i; i < len; i++) {
             sum = sum.add(amountProportions[i]);
         }
         require(MAX_PROPORTION == sum, "CukieSwap: AMOUNT_PROPORTION_ERROR");
@@ -78,8 +71,8 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
         _swapEthToTokensUNI(
-            toTokens, 
-            amountIn.sub(fees), 
+            toTokens,
+            amountIn.sub(fees),
             amountProportions,
             block.timestamp + 360
         );
@@ -89,10 +82,13 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         address toToken,
         uint256 amount,
         uint256 proportion,
-        uint256 deadline 
+        uint256 deadline
     ) internal {
         require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
-        require(proportion > 0 && proportion <= MAX_PROPORTION, "CukieSwap: PROPORTION_ERROR");
+        require(
+            proportion > 0 && proportion <= MAX_PROPORTION,
+            "CukieSwap: PROPORTION_ERROR"
+        );
         require(deadline > block.timestamp, "CukieSwap: INVALID_DEADLINE");
 
         address[] memory path = new address[](2);
@@ -118,13 +114,13 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
             toTokens.length > 0 && amountProportions.length == toTokens.length,
             "CukieSwap: ZERO_LENGTH_TOKENS"
         );
-        
+
         uint256 len = toTokens.length;
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             _swapEthToTokenUNI(
-                toTokens[i], 
-                amountIn, 
-                amountProportions[i], 
+                toTokens[i],
+                amountIn,
+                amountProportions[i],
                 deadline
             );
         }

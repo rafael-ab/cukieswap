@@ -22,15 +22,9 @@ contract CukieSwapV2 is CukieSwapV1 {
     address private _registry;
     IBRegistry public registry;
 
-    event BestDexChoosed(
-        string name,
-        address indexed from,
-        address indexed to
-    );
+    event BestDexChoosed(string name, address indexed from, address indexed to);
 
-    function initializeV2(
-        address payable _recipient
-    ) external initializer {
+    function initializeV2(address payable _recipient) external initializer {
         _router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
         router = IUniswapV2Router(_router);
         _weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -41,9 +35,7 @@ contract CukieSwapV2 is CukieSwapV1 {
         registry = IBRegistry(_registry);
     }
 
-    function swapEthToTokenBestDEX(
-        address token
-    ) external payable {
+    function swapEthToTokenBestDEX(address token) external payable {
         require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");
 
         uint256 amountIn = msg.value;
@@ -67,7 +59,7 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         uint256 sum = 0;
         uint256 len = amountProportions.length;
-        for (uint i; i < len; i++) {
+        for (uint256 i; i < len; i++) {
             sum = sum.add(amountProportions[i]);
         }
         require(MAX_PROPORTION == sum, "CukieSwap: AMOUNT_PROPORTION_ERROR");
@@ -81,8 +73,8 @@ contract CukieSwapV2 is CukieSwapV1 {
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
 
         _swapEthToTokensBestDEX(
-            toTokens, 
-            amountIn.sub(fees), 
+            toTokens,
+            amountIn.sub(fees),
             amountProportions
         );
     }
@@ -92,7 +84,7 @@ contract CukieSwapV2 is CukieSwapV1 {
         uint256 amount,
         uint256 proportion
     ) internal {
-        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
+        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");
         require(amount > 0, "CukieSwap: ZERO_AMOUNT");
 
         string memory name;
@@ -105,7 +97,7 @@ contract CukieSwapV2 is CukieSwapV1 {
             _swapEthToTokenUNI(
                 token,
                 amount,
-                proportion, 
+                proportion,
                 block.timestamp + 360
             );
             name = "UniswapV2";
@@ -123,29 +115,26 @@ contract CukieSwapV2 is CukieSwapV1 {
         uint256 amount,
         uint256[] memory amountProportions
     ) internal {
-        require(    
+        require(
             toTokens.length > 0 && amountProportions.length == toTokens.length,
             "CukieSwap: ZERO_LENGTH_TOKENS"
         );
 
         uint256 len = toTokens.length;
-        for(uint i = 0; i < len; i++) {
-            _swapEthToTokenBestDEX(
-                toTokens[i], 
-                amount, 
-                amountProportions[i]
-            );
+        for (uint256 i = 0; i < len; i++) {
+            _swapEthToTokenBestDEX(toTokens[i], amount, amountProportions[i]);
         }
     }
 
-    function getTokenAmountOutFromUNI(
-        address token,
-        uint256 amount
-    ) public view returns (uint256) {
-        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
+    function getTokenAmountOutFromUNI(address token, uint256 amount)
+        public
+        view
+        returns (uint256)
+    {
+        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");
         require(amount > 0, "CukieSwap: ZERO_AMOUNT");
 
-        uint256 compensation = 10 ** 7;
+        uint256 compensation = 10**7;
 
         IUniswapV2Factory factory = IUniswapV2Factory(router.factory());
 
@@ -154,45 +143,41 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
 
-        uint256 amountOut = UniswapV2Library.getAmountOut(
-            amount,
-            reserve0,
-            reserve1
-        );
+        uint256 amountOut =
+            UniswapV2Library.getAmountOut(amount, reserve0, reserve1);
         return amountOut.mul(compensation);
     }
 
-    function getTokenAmountOutFromBAL(
-        address token,
-        uint256 amount
-    ) public returns (uint256) {
-        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
+    function getTokenAmountOutFromBAL(address token, uint256 amount)
+        public
+        returns (uint256)
+    {
+        require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");
         require(amount > 0, "CukieSwap: ZERO_AMOUNT");
 
         address[] memory bestPools = new address[](1);
         bestPools[0] = registry.getBestPoolsWithLimit(_weth, token, 1)[0];
         bpool = IBPool(bestPools[0]);
-        
+
         uint256 tokenBalanceIn = bpool.getBalance(_weth);
         uint256 tokenBalanceOut = bpool.getBalance(token);
         uint256 tokenWeightIn = bpool.getNormalizedWeight(_weth);
         uint256 tokenWeightOut = bpool.getNormalizedWeight(token);
 
-        uint256 amountOut = bpool.calcOutGivenIn(
-            tokenBalanceIn,
-            tokenWeightIn,
-            tokenBalanceOut,
-            tokenWeightOut,
-            amount,
-            0
-        );
+        uint256 amountOut =
+            bpool.calcOutGivenIn(
+                tokenBalanceIn,
+                tokenWeightIn,
+                tokenBalanceOut,
+                tokenWeightOut,
+                amount,
+                0
+            );
         return amountOut;
     }
 
-    function swapEthToTokenBAL(
-        address toToken
-    ) external payable {
-        require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
+    function swapEthToTokenBAL(address toToken) external payable {
+        require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
 
         uint256 amountIn = msg.value;
         require(amountIn > 0, "CukieSwap: ZERO_AMOUNT");
@@ -200,11 +185,7 @@ contract CukieSwapV2 is CukieSwapV1 {
         uint256 fees = amountIn.div(1000);
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-        _swapEthToTokenBAL(
-            toToken, 
-            amountIn.sub(fees), 
-            MAX_PROPORTION
-        );
+        _swapEthToTokenBAL(toToken, amountIn.sub(fees), MAX_PROPORTION);
     }
 
     function swapEthToTokensBAL(
@@ -218,7 +199,7 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         uint256 sum = 0;
         uint256 len = amountProportions.length;
-        for (uint i; i < len; i++) {
+        for (uint256 i; i < len; i++) {
             sum = sum.add(amountProportions[i]);
         }
         require(MAX_PROPORTION == sum, "CukieSwap: AMOUNT_PROPORTION_ERROR");
@@ -230,11 +211,7 @@ contract CukieSwapV2 is CukieSwapV1 {
         uint256 fees = amountIn.div(1000);
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-        _swapEthToTokensBAL(
-            toTokens, 
-            amountIn.sub(fees), 
-            amountProportions
-        );
+        _swapEthToTokensBAL(toTokens, amountIn.sub(fees), amountProportions);
     }
 
     function _swapEthToTokenBAL(
@@ -243,10 +220,13 @@ contract CukieSwapV2 is CukieSwapV1 {
         uint256 proportion
     ) internal {
         require(toToken != _weth, "CukieSwap: ETH_SAME_ADDRESS");
-        require(proportion > 0 && proportion <= MAX_PROPORTION, "CukieSwap: PROPORTION_ERROR");
+        require(
+            proportion > 0 && proportion <= MAX_PROPORTION,
+            "CukieSwap: PROPORTION_ERROR"
+        );
 
         uint256 newAmount = amount.mul(proportion).div(MAX_PROPORTION);
-        if(weth.balanceOf(address(this)) == 0) {
+        if (weth.balanceOf(address(this)) == 0) {
             weth.deposit{value: amount}();
         }
 
@@ -255,13 +235,14 @@ contract CukieSwapV2 is CukieSwapV1 {
         bpool = IBPool(bestPools[0]);
 
         weth.approve(address(bpool), newAmount);
-        (uint256 tokenAmountOut, ) = bpool.swapExactAmountIn(
-            _weth,
-            newAmount,
-            toToken,
-            1,
-            99999999 * 10 ** 18
-        );
+        (uint256 tokenAmountOut, ) =
+            bpool.swapExactAmountIn(
+                _weth,
+                newAmount,
+                toToken,
+                1,
+                99999999 * 10**18
+            );
         IERC20(toToken).transfer(_msgSender(), tokenAmountOut);
 
         emit LogSwap(_weth, toToken, newAmount);
@@ -280,7 +261,7 @@ contract CukieSwapV2 is CukieSwapV1 {
         weth.deposit{value: amount}();
 
         uint256 len = toTokens.length;
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             address toToken = toTokens[i];
             _swapEthToTokenBAL(toToken, amount, amountProportions[i]);
         }
