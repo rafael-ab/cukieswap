@@ -192,7 +192,7 @@ contract("CukieSwapV2", () => {
     const balance = await balToken.balanceOf(ACCOUNT);
     console.log("BAL Balance:", fromWei(balance));
   });
-/* 
+
  it("should swap ETH to 50% DAI and 50% SNX from Best DEX", async () => {
     const result = await cukieSwapV2.swapEthToTokensBestDEX(
       [DAI_ADDRESS, SNX_ADDRESS],
@@ -283,5 +283,5 @@ contract("CukieSwapV2", () => {
     const balToken = await IERC20.at(BAL_ADDRESS);
     const balBalance = await balToken.balanceOf(ACCOUNT);
     console.log("BAL Balance:", Number(web3.utils.fromWei(balBalance)));
-  }); */
+  });
 })

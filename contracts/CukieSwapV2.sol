@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
-//import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-//import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-//import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "./CukieSwapV1.sol";
 import "./interfaces/IWETH.sol";
 import "./interfaces/IERC20.sol";
@@ -97,8 +94,10 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         string memory name;
 
-        uint256 amountOutUNI = getTokenAmountOutFromUNI(token, amount);
-        uint256 amountOutBAL = getTokenAmountOutFromBAL(token, amount);
+        uint256 newAmount = amount.mul(proportion).div(MAX_PROPORTION);
+
+        uint256 amountOutUNI = getTokenAmountOutFromUNI(token, newAmount);
+        uint256 amountOutBAL = getTokenAmountOutFromBAL(token, newAmount);
 
         if (amountOutUNI > amountOutBAL) {
             _swapEthToTokenUNI(
@@ -109,6 +108,7 @@ contract CukieSwapV2 is CukieSwapV1 {
             );
             name = "UniswapV2";
         } else {
+            weth.deposit{value: amount}();
             _swapEthToTokenBAL(token, amount, proportion);
             name = "Balancer";
         }
@@ -125,8 +125,6 @@ contract CukieSwapV2 is CukieSwapV1 {
             toTokens.length > 0 && amountProportions.length == toTokens.length,
             "CukieSwap: ZERO_LENGTH_TOKENS"
         );
-
-        weth.deposit{value: amount}();
 
         uint256 len = toTokens.length;
         for(uint i = 0; i < len; i++) {
