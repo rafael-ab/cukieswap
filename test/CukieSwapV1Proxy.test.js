@@ -17,6 +17,14 @@ contract("CukieSwapV1 (Proxy)", () => {
     instance = await upgrades.deployProxy(CukieSwapV1, [feeholder.address]);
   });
 
+  it("contract should initialize", async () => {
+    assert.ok(await instance.recipient());
+    assert.ok(await instance._router());
+    assert.ok(await instance.router());
+    assert.ok(await instance.MAX_PROPORTION());
+    assert.ok(await instance._weth());
+  });
+
   it("should retrieves a previously initialised recipient", async () => {
     assert.equal(feeholder.address, await instance.recipient());
   });
