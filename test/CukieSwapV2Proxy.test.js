@@ -26,8 +26,8 @@ contract("CukieSwapV2 (Proxy)", () => {
     assert.ok(await upgraded.weth());
     assert.ok(await upgraded.bpool());
     assert.ok(await upgraded.router());
-    assert.ok(await instance._router());
-    assert.ok(await instance.MAX_PROPORTION());
-    assert.ok(await instance._weth());
+    assert.ok(await upgraded._router());
+    assert.ok(await upgraded.MAX_PROPORTION());
+    assert.ok(await upgraded._weth());
   });
 });

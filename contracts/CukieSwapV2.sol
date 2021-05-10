@@ -5,6 +5,7 @@ import "./CukieSwapV1.sol";
 import "./interfaces/IWETH.sol";
 import "./interfaces/IERC20.sol";
 import "./balancer/interfaces/IBPool.sol";
+import "./balancer/interfaces/IBRegistry.sol";
 import "./uniswapv2/interfaces/IUniswapV2Factory.sol";
 import "./uniswapv2/libraries/UniswapV2Library.sol";
 
@@ -16,8 +17,10 @@ contract CukieSwapV2 is CukieSwapV1 {
     using SafeMathUpgradeable for uint256;
 
     IWETH public weth;
-    address private _bpool;
+    //address private _bpool;
     IBPool public bpool;
+    address private _registry;
+    IBRegistry public registry;
 
     event BestDexChoosed(
         string name,
@@ -34,8 +37,8 @@ contract CukieSwapV2 is CukieSwapV1 {
         MAX_PROPORTION = 10000;
         recipient = _recipient;
         weth = IWETH(_weth);
-        _bpool = 0x44Ed13fca4ce66cAa29d03dDE9a74a24802CD6be;
-        bpool = IBPool(_bpool);
+        _registry = 0x7226DaaF09B3972320Db05f5aB81FF38417Dd687;
+        registry = IBRegistry(_registry);
     }
 
     function swapEthToTokenBestDEX(
@@ -98,7 +101,6 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         uint256 amountOutUNI = getTokenAmountOutFromUNI(token, newAmount);
         uint256 amountOutBAL = getTokenAmountOutFromBAL(token, newAmount);
-
         if (amountOutUNI > amountOutBAL) {
             _swapEthToTokenUNI(
                 token,
@@ -108,11 +110,11 @@ contract CukieSwapV2 is CukieSwapV1 {
             );
             name = "UniswapV2";
         } else {
-            weth.deposit{value: amount}();
+            weth.deposit{value: newAmount}();
             _swapEthToTokenBAL(token, amount, proportion);
             name = "Balancer";
         }
-
+        delete bpool;
         emit BestDexChoosed(name, _weth, token);
     }
 
@@ -167,6 +169,10 @@ contract CukieSwapV2 is CukieSwapV1 {
         require(token != _weth, "CukieSwap: ETH_SAME_ADDRESS");   
         require(amount > 0, "CukieSwap: ZERO_AMOUNT");
 
+        address[] memory bestPools = new address[](1);
+        bestPools[0] = registry.getBestPoolsWithLimit(_weth, token, 1)[0];
+        bpool = IBPool(bestPools[0]);
+        
         uint256 tokenBalanceIn = bpool.getBalance(_weth);
         uint256 tokenBalanceOut = bpool.getBalance(token);
         uint256 tokenWeightIn = bpool.getNormalizedWeight(_weth);
@@ -243,7 +249,12 @@ contract CukieSwapV2 is CukieSwapV1 {
         if(weth.balanceOf(address(this)) == 0) {
             weth.deposit{value: amount}();
         }
-        weth.approve(_bpool, newAmount);
+
+        address[] memory bestPools = new address[](1);
+        bestPools[0] = registry.getBestPoolsWithLimit(_weth, toToken, 1)[0];
+        bpool = IBPool(bestPools[0]);
+
+        weth.approve(address(bpool), newAmount);
         (uint256 tokenAmountOut, ) = bpool.swapExactAmountIn(
             _weth,
             newAmount,
