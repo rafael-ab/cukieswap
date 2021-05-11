@@ -36,8 +36,6 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
         require(amountIn > 0, "CukieSwap: ZERO_AMOUNT");
 
         uint256 fees = amountIn.div(1000);
-        (bool success, ) = recipient.call{value: fees}("");
-        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
 
         _swapEthToTokenUNI(
             toToken,
@@ -45,6 +43,8 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
             MAX_PROPORTION,
             block.timestamp + 360
         );
+        (bool success, ) = recipient.call{value: fees}("");
+        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
     }
 
     function swapEthToTokensUNI(
@@ -68,14 +68,14 @@ contract CukieSwapV1 is Initializable, ContextUpgradeable {
 
         // 0.1% of fees
         uint256 fees = amountIn.div(1000);
-        (bool success, ) = recipient.call{value: fees}("");
-        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
         _swapEthToTokensUNI(
             toTokens,
             amountIn.sub(fees),
             amountProportions,
             block.timestamp + 360
         );
+        (bool success, ) = recipient.call{value: fees}("");
+        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
     }
 
     function _swapEthToTokenUNI(

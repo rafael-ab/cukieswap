@@ -42,10 +42,9 @@ contract CukieSwapV2 is CukieSwapV1 {
         require(amountIn > 0, "CukieSwap: ZERO_AMOUNT");
 
         uint256 fees = amountIn.div(1000);
+        _swapEthToTokenBestDEX(token, amountIn.sub(fees), MAX_PROPORTION);
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-
-        _swapEthToTokenBestDEX(token, amountIn.sub(fees), MAX_PROPORTION);
     }
 
     function swapEthToTokensBestDEX(
@@ -69,14 +68,13 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         // 0.1% of fees
         uint256 fees = amountIn.div(1000);
-        (bool success, ) = recipient.call{value: fees}("");
-        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-
         _swapEthToTokensBestDEX(
             toTokens,
             amountIn.sub(fees),
             amountProportions
         );
+        (bool success, ) = recipient.call{value: fees}("");
+        require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
     }
 
     function _swapEthToTokenBestDEX(
@@ -183,9 +181,9 @@ contract CukieSwapV2 is CukieSwapV1 {
         require(amountIn > 0, "CukieSwap: ZERO_AMOUNT");
 
         uint256 fees = amountIn.div(1000);
+        _swapEthToTokenBAL(toToken, amountIn.sub(fees), MAX_PROPORTION);
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-        _swapEthToTokenBAL(toToken, amountIn.sub(fees), MAX_PROPORTION);
     }
 
     function swapEthToTokensBAL(
@@ -209,9 +207,9 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         // 0.1% of fees
         uint256 fees = amountIn.div(1000);
+        _swapEthToTokensBAL(toTokens, amountIn.sub(fees), amountProportions);
         (bool success, ) = recipient.call{value: fees}("");
         require(success, "CukieSwap: FEES_TRANSACTION_ERROR");
-        _swapEthToTokensBAL(toTokens, amountIn.sub(fees), amountProportions);
     }
 
     function _swapEthToTokenBAL(
@@ -262,8 +260,7 @@ contract CukieSwapV2 is CukieSwapV1 {
 
         uint256 len = toTokens.length;
         for (uint256 i = 0; i < len; i++) {
-            address toToken = toTokens[i];
-            _swapEthToTokenBAL(toToken, amount, amountProportions[i]);
+            _swapEthToTokenBAL(toTokens[i], amount, amountProportions[i]);
         }
     }
 }
